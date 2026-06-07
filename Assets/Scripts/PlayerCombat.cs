@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(EntityStats))]
 public class PlayerCombat : MonoBehaviour
@@ -10,6 +11,7 @@ public class PlayerCombat : MonoBehaviour
     public LayerMask enemyLayers;
 
     private EntityStats stats;
+    public event Action OnAttack;
 
     void Awake()
     {
@@ -26,8 +28,10 @@ public class PlayerCombat : MonoBehaviour
 
     void Attack()
     {
-        if (!stats.UseStamina(staminaCostPerAttack)) return; 
-       
+        if (!stats.UseStamina(staminaCostPerAttack)) return;
+
+        OnAttack?.Invoke();
+
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
 
         foreach (Collider2D enemy in hitEnemies)

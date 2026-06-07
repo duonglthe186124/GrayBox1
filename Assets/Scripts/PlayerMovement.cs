@@ -6,9 +6,13 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f;
     public float staminaCostPerSecond = 10f;
 
+    public float minStaminaToMove = 15f;
+
     private Rigidbody2D rb;
     private EntityStats stats;
     private float moveInput;
+
+    private bool isExhausted = false;
 
     void Awake()
     {
@@ -23,17 +27,18 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (Mathf.Abs(moveInput) > 0)
+        if (Mathf.Abs(moveInput) == 0 || stats.isExhausted)
         {
-            // C? g?ng tr? stamina, n?u th�nh c�ng th� cho ph�p di chuy?n
-            if (stats.UseStamina(staminaCostPerSecond * Time.fixedDeltaTime))
-            {
-                rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
-            }
-            else
-            {
-                rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); // H?t s?c th� d?ng
-            }
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            return; 
+        }
+
+        
+        float costThisFrame = staminaCostPerSecond * Time.fixedDeltaTime;
+
+        if (stats.UseStamina(costThisFrame))
+        {
+            rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
         }
         else
         {

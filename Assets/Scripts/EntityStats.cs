@@ -10,6 +10,9 @@ public class EntityStats : MonoBehaviour
     public float currentStamina;
     public float staminaRegenRate = 15f;
 
+    [HideInInspector] public bool isExhausted = false;
+    public float minStaminaToRecover = 25f;
+
     // Các event để UI đăng ký lắng nghe
     public event Action<float, float> OnHealthChanged;
     public event Action<float, float> OnStaminaChanged;
@@ -35,12 +38,23 @@ public class EntityStats : MonoBehaviour
 
     public bool UseStamina(float amount)
     {
+        if (isExhausted) return false;
+
         if (currentStamina >= amount)
         {
             currentStamina -= amount;
+
+            if (currentStamina <= 0.1f)
+            {
+                currentStamina = 0f;
+                isExhausted = true;
+            }
+
             OnStaminaChanged?.Invoke(currentStamina, maxStamina);
             return true; // Đủ stamina và đã trừ
         }
+
+        isExhausted = true;
         return false; // Không đủ stamina
     }
 
@@ -51,6 +65,11 @@ public class EntityStats : MonoBehaviour
             currentStamina += staminaRegenRate * Time.deltaTime;
             currentStamina = Mathf.Min(currentStamina, maxStamina);
             OnStaminaChanged?.Invoke(currentStamina, maxStamina);
+
+            if (isExhausted && currentStamina >= minStaminaToRecover)
+            {
+                isExhausted = false; 
+            }
         }
     }
 
